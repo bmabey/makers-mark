@@ -19,7 +19,8 @@ module MakersMark
       doc.search('div.code').each do |div|
         lexer = div['rel'] || :ruby
 
-        lexted_text = Albino.new(div.text, lexer).to_s
+        text, lines_to_defocus = extract_defocus_marks(div.text)
+        lexted_text = Albino.new(text, lexer).to_s
 
         highlighted = Nokogiri::HTML(lexted_text).at('div')
 
@@ -31,6 +32,15 @@ module MakersMark
 
         div.replace(highlighted)
       end
+    end
+
+
+    def extract_defocus_marks(text)
+      lines_to_defocus = []
+      text.strip.split("\n").each_with_index do |line, index|
+        lines_to_defocus << index if line =~ /~~\s*$/
+      end
+      [text.gsub(/~~\s*$/,''), lines_to_defocus]
     end
 
     def markup

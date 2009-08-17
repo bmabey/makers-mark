@@ -22,6 +22,24 @@ describe 'MakersMark' do
     Nokogiri::HTML(result).at('.highlight.ruby').should_not be_nil
   end
 
+  it 'defocusses designated code lines' do
+    with_markdown <<-MD
+    |
+    |@@@ ruby
+    |    def code
+    |      Some.new(:unimportant_stuff) ~~
+    |      :foo
+    |      some_more_unimportant_stuff  ~~
+    |    end
+    |@@@
+    MD
+
+    defocused_lines = Nokogiri(result).css('.highlight.ruby span.defocus').text
+    %w[Some.new(:unimportant_stuff) some_more_unimportant_stuff].each do |expected_line|
+      defocused_lines.should include(expected_line)
+    end
+  end
+
   # this one is hard
   it 'allows custom lexer' do
     with_markdown <<-MD
